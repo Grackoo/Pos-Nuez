@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0A0A0A;
+  --color-on-background: #E5E5E5;
+
+  --color-surface: #111111;
+  --color-surface-dim: #0A0A0A;
+  --color-surface-bright: #1A1A1A;
+  --color-on-surface: #E5E5E5;
+  
+  --color-surface-container-lowest: #000000;
+  --color-surface-container-low: #0a0a0a;
+  --color-surface-container: #111111;
+  --color-surface-container-high: #1A1A1A;
+  --color-surface-container-highest: #1F1F1F;
+  --color-on-surface-variant: #888888;
+  
+  --color-outline: #444444;
+  --color-outline-variant: #1F1F1F;
+  
+  --color-primary: #D4AF37;
+  --color-on-primary: #000000;
+  --color-primary-container: #2A230B;
+  --color-on-primary-container: #D4AF37;
+  
+  --color-secondary: #E5E5E5;
+  --color-on-secondary: #000000;
+  --color-secondary-container: #1F1F1F;
+  --color-on-secondary-container: #E5E5E5;
+  
+  --color-tertiary: #888888;
+  --color-on-tertiary: #000000;
+  --color-tertiary-container: #1A1A1A;
+  --color-on-tertiary-container: #E5E5E5;
+  
+  --color-error: #ef4444;
+  --color-on-error: #000000;
+  --color-error-container: #3f0f0f;
+  --color-on-error-container: #fca5a5;
+
+  --font-body-md: 'Inter', sans-serif;
+  --font-label-sm: 'Inter', sans-serif;
+  --font-headline-lg: 'Playfair Display', serif;
+  --font-headline-lg-mobile: 'Playfair Display', serif;
+  --font-data-display: 'JetBrains Mono', monospace;
+  --font-display-lg: 'Playfair Display', serif;
+
+  --spacing-margin-mobile: 1rem;
+  --spacing-margin-desktop: 2.5rem;
+  --spacing-gutter: 1.5rem;
+  --spacing-touch-target-min: 48px;
+  --spacing-stack-sm: 0.5rem;
+  --spacing-stack-md: 1rem;
+}
+
+body {
+  font-family: var(--font-body-md);
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+}
+
+.font-label-sm {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  font-size: 10px;
+}
+
+.font-headline-lg, .font-headline-lg-mobile {
+  font-style: italic;
+}
+
+.font-data-display {
+  letter-spacing: -0.05em;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

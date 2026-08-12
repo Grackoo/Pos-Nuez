@@ -1,0 +1,6 @@
+{
+  "name": "NuezLogistics",
+  "description": "A distribution and inventory management system for walnuts, featuring sales, dashboard, and customer directories.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
