@@ -11,17 +11,19 @@ interface LayoutProps {
 export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
   const desktopNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'inventory', label: 'Inventory', icon: Package },
-    { id: 'reports', label: 'Reports', icon: BarChart2 },
-    { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'sales', label: 'Nueva Venta', icon: Store },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'sales', label: 'Punto de Venta', icon: Store },
+    { id: 'inventory', label: 'Inventario', icon: Package },
+    { id: 'reports', label: 'Reportes', icon: BarChart2 },
+    { id: 'customers', label: 'Clientes', icon: Users },
+    { id: 'employees', label: 'Empleados', icon: Users },
+    { id: 'settings', label: 'Ajustes', icon: Settings },
   ] as const;
 
   const mobileNavItems = [
-    { id: 'sales', label: 'Sales', icon: Store },
-    { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }, // using Map as substitute for route/distance
+    { id: 'sales', label: 'Ventas', icon: Store },
+    { id: 'inventory', label: 'Inventario', icon: Package },
+    { id: 'customers', label: 'Clientes', icon: Users },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ] as const;
 
   return (

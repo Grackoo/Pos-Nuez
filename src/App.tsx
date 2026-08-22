@@ -10,10 +10,11 @@ import { InventoryView } from './components/InventoryView';
 import { SalesView } from './components/SalesView';
 import { CustomersView } from './components/CustomersView';
 import { ReportsView } from './components/ReportsView';
+import { EmployeesView } from './components/EmployeesView';
 import { ViewType } from './types';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
+  const [currentView, setCurrentView] = useState<ViewType>('sales');
 
   return (
     <Layout currentView={currentView} setCurrentView={setCurrentView}>
@@ -22,6 +23,7 @@ export default function App() {
       {currentView === 'sales' && <SalesView />}
       {currentView === 'customers' && <CustomersView />}
       {currentView === 'reports' && <ReportsView />}
+      {currentView === 'employees' && <EmployeesView />}
     </Layout>
   );
 }
