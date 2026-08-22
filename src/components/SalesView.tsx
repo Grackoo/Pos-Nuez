@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Search, ArrowRight, Minus, Plus, ShoppingCart, Trash2, CheckCircle2 } from 'lucide-react';
+import { Search, ArrowRight, Minus, Plus, ShoppingCart, Trash2, CheckCircle2, Calculator } from 'lucide-react';
 import { useStore } from '../store/StoreContext';
-import { SaleItem, Product } from '../types';
+import { SaleItem, Product, PaymentMethod } from '../types';
 
 export function SalesView() {
-  const { products, categories, activeEmployee, addSale } = useStore();
+  const { products, categories, customers, activeEmployee, addSale } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   
@@ -12,25 +12,33 @@ export function SalesView() {
   const [isCheckout, setIsCheckout] = useState(false);
   const [checkoutComplete, setCheckoutComplete] = useState(false);
 
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Efectivo');
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+
+  const [isCalcModalOpen, setIsCalcModalOpen] = useState(false);
+  const [calcProduct, setCalcProduct] = useState<Product | null>(null);
+  const [calcMode, setCalcMode] = useState<'qty' | 'amount'>('qty');
+  const [calcValue, setCalcValue] = useState<string>('');
+
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategoryId ? p.categoryId === selectedCategoryId : true;
     return matchesSearch && matchesCategory;
   });
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, quantity: number = 1) => {
     const existing = cart.find(item => item.productId === product.id);
     if (existing) {
-      if (existing.quantity < product.stock) {
+      if (existing.quantity + quantity <= product.stock) {
         setCart(cart.map(item => 
           item.productId === product.id 
-            ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.priceAtSale }
+            ? { ...item, quantity: item.quantity + quantity, subtotal: (item.quantity + quantity) * item.priceAtSale }
             : item
         ));
       }
     } else {
-      if (product.stock > 0) {
-        setCart([...cart, { productId: product.id, quantity: 1, priceAtSale: product.price, subtotal: product.price }]);
+      if (product.stock >= quantity) {
+        setCart([...cart, { productId: product.id, quantity: quantity, priceAtSale: product.price, subtotal: product.price * quantity }]);
       }
     }
   };
@@ -41,7 +49,8 @@ export function SalesView() {
 
     setCart(cart.map(item => {
       if (item.productId === productId) {
-        const newQty = Math.max(1, Math.min(item.quantity + delta, product.stock));
+        // allowing decimals if unit is Kg or Gramos, but simple + - steps by 1
+        const newQty = Math.max(0.01, Math.min(item.quantity + delta, product.stock));
         return { ...item, quantity: newQty, subtotal: newQty * item.priceAtSale };
       }
       return item;
@@ -56,19 +65,54 @@ export function SalesView() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
+    if (paymentMethod === 'Credito' && !selectedCustomerId) {
+      alert("Debe seleccionar un cliente para compras a crédito");
+      return;
+    }
     
     addSale({
       employeeId: activeEmployee?.id || 'unknown',
       total: total,
-      items: cart
+      items: cart,
+      paymentMethod,
+      customerId: selectedCustomerId || undefined
     });
     
     setCheckoutComplete(true);
     setCart([]);
+    setSelectedCustomerId('');
+    setPaymentMethod('Efectivo');
     setTimeout(() => {
       setCheckoutComplete(false);
       setIsCheckout(false);
     }, 3000);
+  };
+
+  const handleCalcSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!calcProduct) return;
+    let qty = 0;
+    const val = parseFloat(calcValue);
+    if (isNaN(val) || val <= 0) return;
+
+    if (calcMode === 'qty') {
+      qty = val;
+    } else {
+      // By amount
+      qty = val / calcProduct.price;
+    }
+    
+    // Round to 3 decimals
+    qty = Math.round(qty * 1000) / 1000;
+    
+    if (qty > calcProduct.stock) {
+      alert("No hay suficiente stock");
+      return;
+    }
+
+    addToCart(calcProduct, qty);
+    setIsCalcModalOpen(false);
+    setCalcValue('');
   };
 
   if (checkoutComplete) {
@@ -124,27 +168,40 @@ export function SalesView() {
         {/* Product Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-24 lg:pb-0 overflow-y-auto">
           {filteredProducts.map(product => (
-            <button 
+            <div 
               key={product.id}
-              onClick={() => addToCart(product)}
-              disabled={product.stock <= 0}
-              className={`bg-surface rounded-xl p-4 border flex flex-col text-left transition-all ${product.stock > 0 ? 'border-outline-variant hover:border-primary hover:shadow-md cursor-pointer' : 'border-error/30 opacity-60 cursor-not-allowed'}`}
+              className={`bg-surface rounded-xl p-4 border flex flex-col text-left transition-all ${product.stock > 0 ? 'border-outline-variant hover:border-primary hover:shadow-md' : 'border-error/30 opacity-60'}`}
             >
-              <div className="flex justify-between items-start mb-2">
-                <span className="font-semibold text-on-surface line-clamp-2">{product.name}</span>
+              <div className="flex justify-between items-start mb-2" onClick={() => product.stock > 0 && addToCart(product, 1)}>
+                <span className="font-semibold text-on-surface line-clamp-2 cursor-pointer">{product.name}</span>
               </div>
-              <div className="mt-auto pt-2">
-                <p className="text-lg font-bold text-primary">${product.price.toFixed(2)}</p>
-                <p className={`text-xs ${product.stock > 0 ? 'text-on-surface-variant' : 'text-error font-medium'}`}>
-                  {product.stock > 0 ? `Stock: ${product.stock} ${product.unit}` : 'Agotado'}
-                </p>
+              <div className="mt-auto pt-2 flex justify-between items-end">
+                <div onClick={() => product.stock > 0 && addToCart(product, 1)} className="cursor-pointer flex-1">
+                  <p className="text-lg font-bold text-primary">${product.price.toFixed(2)}</p>
+                  <p className={`text-xs ${product.stock > 0 ? 'text-on-surface-variant' : 'text-error font-medium'}`}>
+                    {product.stock > 0 ? `Stock: ${product.stock} ${product.unit}` : 'Agotado'}
+                  </p>
+                </div>
+                {['Kg', 'Gramos'].includes(product.unit) && product.stock > 0 && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCalcProduct(product);
+                      setIsCalcModalOpen(true);
+                      setCalcValue('');
+                    }}
+                    className="p-2 bg-surface-container text-primary rounded-lg hover:bg-surface-container-high ml-2"
+                  >
+                    <Calculator size={18} />
+                  </button>
+                )}
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Cart Area - Sidebar on Desktop, Bottom Sheet/Overlay on Mobile when checkout active */}
+      {/* Cart Area */}
       <div className={`
         fixed inset-0 z-50 bg-surface flex flex-col lg:static lg:w-96 lg:bg-transparent lg:border-l lg:border-outline-variant lg:pl-6
         ${isCheckout ? 'flex' : 'hidden lg:flex'}
@@ -183,7 +240,7 @@ export function SalesView() {
                       <span className="font-bold text-primary">${item.subtotal.toFixed(2)}</span>
                       <div className="flex items-center gap-3 bg-surface-container rounded-lg p-1">
                         <button onClick={() => updateQuantity(item.productId, -1)} className="w-8 h-8 flex items-center justify-center bg-surface rounded shadow-sm text-on-surface">-</button>
-                        <span className="font-medium min-w-[1.5rem] text-center">{item.quantity}</span>
+                        <span className="font-medium min-w-[3rem] text-center">{Number.isInteger(item.quantity) ? item.quantity : item.quantity.toFixed(3)}</span>
                         <button onClick={() => updateQuantity(item.productId, 1)} className="w-8 h-8 flex items-center justify-center bg-surface rounded shadow-sm text-on-surface">+</button>
                       </div>
                     </div>
@@ -194,11 +251,41 @@ export function SalesView() {
           )}
         </div>
 
-        <div className="p-4 lg:p-6 lg:bg-surface-container-lowest lg:rounded-2xl lg:border lg:border-outline-variant lg:shadow-sm mt-auto border-t border-outline-variant bg-surface">
-          <div className="flex justify-between items-center mb-4 text-lg">
+        {/* Checkout panel */}
+        <div className="p-4 lg:p-6 lg:bg-surface-container-lowest lg:rounded-2xl lg:border lg:border-outline-variant lg:shadow-sm mt-auto border-t border-outline-variant bg-surface flex flex-col gap-4">
+          
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-on-surface-variant font-medium">Método de Pago</label>
+            <div className="grid grid-cols-3 gap-2">
+              {['Efectivo', 'Tarjeta', 'Credito'].map(m => (
+                <button 
+                  key={m}
+                  onClick={() => setPaymentMethod(m as PaymentMethod)}
+                  className={`py-2 text-sm rounded-lg border transition-colors ${paymentMethod === m ? 'bg-primary/10 border-primary text-primary font-medium' : 'bg-surface-container border-outline text-on-surface'}`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-on-surface-variant font-medium">Cliente (Opcional, Obligatorio para Crédito)</label>
+            <select 
+              value={selectedCustomerId}
+              onChange={e => setSelectedCustomerId(e.target.value)}
+              className="w-full p-2 rounded-lg border border-outline bg-surface focus:ring-2 focus:ring-primary outline-none text-sm"
+            >
+              <option value="">Consumidor Final</option>
+              {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+
+          <div className="flex justify-between items-center mt-2 text-lg">
             <span className="text-on-surface-variant">Total:</span>
             <span className="text-2xl font-bold text-primary">${total.toFixed(2)}</span>
           </div>
+
           <button 
             onClick={handleCheckout}
             disabled={cart.length === 0}
@@ -222,6 +309,54 @@ export function SalesView() {
             </div>
             <span>${total.toFixed(2)}</span>
           </button>
+        </div>
+      )}
+
+      {/* Calc Modal for bulk */}
+      {isCalcModalOpen && calcProduct && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-surface rounded-xl p-6 w-full max-w-sm shadow-lg relative">
+            <h3 className="text-lg font-bold mb-4">Venta a Granel - {calcProduct.name}</h3>
+            <div className="flex gap-2 mb-4 bg-surface-container rounded-lg p-1">
+              <button 
+                className={`flex-1 py-1 rounded text-sm ${calcMode === 'qty' ? 'bg-primary text-on-primary' : ''}`}
+                onClick={() => { setCalcMode('qty'); setCalcValue(''); }}
+              >
+                Por Peso
+              </button>
+              <button 
+                className={`flex-1 py-1 rounded text-sm ${calcMode === 'amount' ? 'bg-primary text-on-primary' : ''}`}
+                onClick={() => { setCalcMode('amount'); setCalcValue(''); }}
+              >
+                Por Monto ($)
+              </button>
+            </div>
+            <form onSubmit={handleCalcSubmit}>
+              <div className="relative mb-4">
+                <input 
+                  type="number" step="0.001" min="0" required
+                  autoFocus
+                  value={calcValue} onChange={e => setCalcValue(e.target.value)}
+                  placeholder={calcMode === 'qty' ? `Ej. 0.250 (${calcProduct.unit})` : `Ej. 50.00`}
+                  className="w-full p-3 rounded-lg border border-outline bg-surface text-lg text-center focus:ring-2 focus:ring-primary outline-none"
+                />
+              </div>
+              {calcMode === 'amount' && calcValue && !isNaN(parseFloat(calcValue)) && (
+                <p className="text-center text-sm text-on-surface-variant mb-4">
+                  Equivale a: <span className="font-bold text-primary">{(parseFloat(calcValue) / calcProduct.price).toFixed(3)} {calcProduct.unit}</span>
+                </p>
+              )}
+              {calcMode === 'qty' && calcValue && !isNaN(parseFloat(calcValue)) && (
+                <p className="text-center text-sm text-on-surface-variant mb-4">
+                  Subtotal: <span className="font-bold text-primary">${(parseFloat(calcValue) * calcProduct.price).toFixed(2)}</span>
+                </p>
+              )}
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setIsCalcModalOpen(false)} className="flex-1 p-2 bg-surface-container rounded-lg text-sm">Cancelar</button>
+                <button type="submit" className="flex-1 p-2 bg-primary text-on-primary rounded-lg text-sm">Agregar</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

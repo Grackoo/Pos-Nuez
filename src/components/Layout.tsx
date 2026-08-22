@@ -23,15 +23,17 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'sales', label: 'Punto de Venta', icon: Store },
     { id: 'inventory', label: 'Inventario', icon: Package },
-    { id: 'reports', label: 'Reportes', icon: BarChart2 },
+    { id: 'cash', label: 'Caja (Corte)', icon: Wallet },
     { id: 'customers', label: 'Clientes', icon: Users },
     { id: 'employees', label: 'Empleados', icon: Users },
+    { id: 'reports', label: 'Reportes', icon: BarChart2 },
     { id: 'settings', label: 'Ajustes', icon: Settings },
   ] as const;
 
   const mobileNavItems = [
     { id: 'sales', label: 'Ventas', icon: Store },
     { id: 'inventory', label: 'Inventario', icon: Package },
+    { id: 'cash', label: 'Caja', icon: Wallet },
     { id: 'customers', label: 'Clientes', icon: Users },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ] as const;

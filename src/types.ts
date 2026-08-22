@@ -1,4 +1,4 @@
-export type ViewType = 'dashboard' | 'inventory' | 'sales' | 'customers' | 'reports' | 'employees' | 'settings';
+export type ViewType = 'dashboard' | 'inventory' | 'sales' | 'customers' | 'reports' | 'employees' | 'settings' | 'cash';
 
 export interface Employee {
   id: string;
@@ -28,6 +28,8 @@ export interface SaleItem {
   priceAtSale: number;
 }
 
+export type PaymentMethod = 'Efectivo' | 'Tarjeta' | 'Credito';
+
 export interface Sale {
   id: string;
   date: string;
@@ -35,6 +37,7 @@ export interface Sale {
   customerId?: string;
   total: number;
   items: SaleItem[];
+  paymentMethod: PaymentMethod;
 }
 
 export interface Customer {
@@ -43,4 +46,43 @@ export interface Customer {
   phone: string;
   email: string;
   balance: number;
+}
+
+export interface CustomerMovement {
+  id: string;
+  customerId: string;
+  date: string;
+  amount: number;
+  type: 'Cargo' | 'Abono';
+  description: string;
+}
+
+export interface CashSession {
+  id: string;
+  startTime: string;
+  endTime?: string;
+  employeeId: string;
+  initialAmount: number;
+  cashSales: number;
+  cardSales: number;
+  cashIn: number;
+  cashOut: number;
+  expectedCash: number;
+  actualCash?: number;
+  status: 'Open' | 'Closed';
+}
+
+export interface TransformationTarget {
+  productId: string;
+  quantity: number;
+}
+
+export interface Transformation {
+  id: string;
+  date: string;
+  sourceProductId: string;
+  sourceQuantity: number;
+  targets: TransformationTarget[];
+  wasteQuantity: number;
+  employeeId: string;
 }
