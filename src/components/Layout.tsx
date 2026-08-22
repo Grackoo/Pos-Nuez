@@ -1,6 +1,6 @@
 import React from 'react';
 import { ViewType } from '../types';
-import { LayoutDashboard, Package, BarChart2, Users, Settings, Store, Map, Bell } from 'lucide-react';
+import { LayoutDashboard, Package, BarChart2, Users, Settings, Store, Map, Bell, Wallet } from 'lucide-react';
 
 interface LayoutProps {
   currentView: ViewType;
