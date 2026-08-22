@@ -1,4 +1,4 @@
-export type ViewType = 'dashboard' | 'inventory' | 'sales' | 'customers' | 'reports' | 'employees';
+export type ViewType = 'dashboard' | 'inventory' | 'sales' | 'customers' | 'reports' | 'employees' | 'settings';
 
 export interface Employee {
   id: string;

@@ -9,6 +9,16 @@ interface LayoutProps {
 }
 
 export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
+  const [storeName, setStoreName] = React.useState(() => localStorage.getItem('setting_store_name') || 'Pos Venta de Nuez');
+
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      setStoreName(localStorage.getItem('setting_store_name') || 'Pos Venta de Nuez');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const desktopNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'sales', label: 'Punto de Venta', icon: Store },
@@ -31,13 +41,13 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
       {/* NavigationDrawer (Desktop) */}
       <nav className="hidden md:flex flex-col h-screen py-margin-desktop bg-surface-container-low text-primary w-64 fixed left-0 top-0 border-r border-outline-variant z-50">
         <div className="px-4 mb-8">
-          <h2 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">NuezLogistics</h2>
+          <h2 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">{storeName}</h2>
         </div>
-        
+
         <div className="px-4 mb-6 flex items-center gap-3">
-          <img 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7ZMrNpfnqeF13Ct5Slc8r5Q0dfOE7GdLNKkWnALqI8i4R2ffeiesZCa4s8gNSg2eIiDbYuKJM49IXyLTDdi0nS6yuXOX6NZnd5YMkXOtkxcefBoVMxGmyJk3GI_gFWFHiWUpWCumK3d0ScKQH03zG4K3eTllrRfmwsvNS4fA9TlK7S6La_FoZUQlwCyLGZK6Hs5tijrQ8vycO-_yjCH17D7kMZtABYI5IcHQjPZcqgMlU_3kEYck" 
-            alt="Manager" 
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7ZMrNpfnqeF13Ct5Slc8r5Q0dfOE7GdLNKkWnALqI8i4R2ffeiesZCa4s8gNSg2eIiDbYuKJM49IXyLTDdi0nS6yuXOX6NZnd5YMkXOtkxcefBoVMxGmyJk3GI_gFWFHiWUpWCumK3d0ScKQH03zG4K3eTllrRfmwsvNS4fA9TlK7S6La_FoZUQlwCyLGZK6Hs5tijrQ8vycO-_yjCH17D7kMZtABYI5IcHQjPZcqgMlU_3kEYck"
+            alt="Manager"
             className="w-10 h-10 rounded-full object-cover border border-outline-variant"
           />
           <div>
@@ -52,13 +62,12 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
             const isActive = currentView === item.id;
             return (
               <li key={item.id}>
-                <button 
+                <button
                   onClick={() => setCurrentView(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 mx-2 rounded-lg transition-all ${
-                    isActive 
-                      ? 'bg-secondary-container text-on-secondary-container font-semibold translate-x-1' 
+                  className={`w-full flex items-center gap-3 px-4 py-3 mx-2 rounded-lg transition-all ${isActive
+                      ? 'bg-secondary-container text-on-secondary-container font-semibold translate-x-1'
                       : 'text-on-surface-variant hover:bg-surface-container-highest'
-                  }`}
+                    }`}
                 >
                   <Icon size={20} className={isActive ? 'fill-current' : ''} />
                   <span className="font-body-md text-left flex-grow">{item.label}</span>
@@ -75,12 +84,12 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
       {/* TopAppBar (Mobile) */}
       <header className="md:hidden flex justify-between items-center px-margin-mobile h-touch-target-min w-full fixed top-0 z-50 bg-surface border-b border-outline-variant">
         <div className="flex items-center gap-3">
-          <img 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCt9Bcf27Iv85sLYrtjDoW_CPFQIzTk902a5_2ZGZDKnTIUpllOYL6pHC5to9rC385Fs_Ml-7Tdbo5w-gnBQrfjO9ImOTEQMEuLcpXHQJcF6wFEbILbeOXFMypMG0o3X2sBvxSq-YK9SSF1Yfwh3WEE18tsNd7NIWlG6ct9hiLms2SVG9fiv1UHjv8cJUdFKfBL26kGmfpaLtJqHARDmUbY2yrVxMfTgDtMm6F_kkDJGYXe8dTEwh0" 
-            alt="Manager" 
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCt9Bcf27Iv85sLYrtjDoW_CPFQIzTk902a5_2ZGZDKnTIUpllOYL6pHC5to9rC385Fs_Ml-7Tdbo5w-gnBQrfjO9ImOTEQMEuLcpXHQJcF6wFEbILbeOXFMypMG0o3X2sBvxSq-YK9SSF1Yfwh3WEE18tsNd7NIWlG6ct9hiLms2SVG9fiv1UHjv8cJUdFKfBL26kGmfpaLtJqHARDmUbY2yrVxMfTgDtMm6F_kkDJGYXe8dTEwh0"
+            alt="Manager"
             className="w-8 h-8 rounded-full object-cover border border-outline-variant"
           />
-          <span className="font-headline-lg-mobile font-bold text-primary tracking-tight">NuezLogistics</span>
+          <span className="font-headline-lg-mobile font-bold text-primary tracking-tight">{storeName}</span>
         </div>
         <button className="text-on-surface-variant hover:bg-surface-container transition-colors rounded-full h-10 w-10 flex items-center justify-center">
           <Bell size={24} />
@@ -101,9 +110,8 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
             <button
               key={item.id}
               onClick={() => setCurrentView(item.id)}
-              className={`flex flex-col items-center justify-center px-4 py-1 transition-all rounded-lg ${
-                isActive ? 'bg-secondary-container text-on-secondary-container scale-105' : 'text-on-surface-variant hover:bg-surface-container-high'
-              }`}
+              className={`flex flex-col items-center justify-center px-4 py-1 transition-all rounded-lg ${isActive ? 'bg-secondary-container text-on-secondary-container scale-105' : 'text-on-surface-variant hover:bg-surface-container-high'
+                }`}
             >
               <Icon size={24} className={isActive ? 'fill-current' : ''} />
               <span className="font-label-sm mt-1">{item.label}</span>

@@ -11,6 +11,7 @@ import { SalesView } from './components/SalesView';
 import { CustomersView } from './components/CustomersView';
 import { ReportsView } from './components/ReportsView';
 import { EmployeesView } from './components/EmployeesView';
+import { SettingsView } from './components/SettingsView';
 import { ViewType } from './types';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
       {currentView === 'customers' && <CustomersView />}
       {currentView === 'reports' && <ReportsView />}
       {currentView === 'employees' && <EmployeesView />}
+      {currentView === 'settings' && <SettingsView />}
     </Layout>
   );
 }
