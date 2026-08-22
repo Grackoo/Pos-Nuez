@@ -73,7 +73,7 @@ export function DashboardView() {
             </div>
           </div>
           <div className="text-2xl font-bold text-error">{lowStockProducts.length}</div>
-          <p className="text-xs text-error mt-1">Productos con stock bajo (< 10)</p>
+          <p className="text-xs text-error mt-1">Productos con stock bajo (&lt; 10)</p>
         </div>
       </div>
 
