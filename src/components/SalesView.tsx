@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { Search, ArrowRight, Minus, Plus, ShoppingCart, Trash2, CheckCircle2, Calculator } from 'lucide-react';
+import { Search, ArrowRight, Minus, Plus, ShoppingCart, Trash2, CheckCircle2, Calculator, Receipt, X, Printer } from 'lucide-react';
 import { useStore } from '../store/StoreContext';
-import { SaleItem, Product, PaymentMethod } from '../types';
+import { SaleItem, Product, PaymentMethod, Sale } from '../types';
 
 export function SalesView() {
-  const { products, categories, customers, activeEmployee, addSale } = useStore();
+  const { products, categories, customers, employees, activeEmployee, addSale } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   
   const [cart, setCart] = useState<SaleItem[]>([]);
   const [isCheckout, setIsCheckout] = useState(false);
-  const [checkoutComplete, setCheckoutComplete] = useState(false);
+  const [completedSale, setCompletedSale] = useState<Sale | null>(null);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Efectivo');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
@@ -49,7 +49,6 @@ export function SalesView() {
 
     setCart(cart.map(item => {
       if (item.productId === productId) {
-        // allowing decimals if unit is Kg or Gramos, but simple + - steps by 1
         const newQty = Math.max(0.01, Math.min(item.quantity + delta, product.stock));
         return { ...item, quantity: newQty, subtotal: newQty * item.priceAtSale };
       }
@@ -70,7 +69,7 @@ export function SalesView() {
       return;
     }
     
-    addSale({
+    const newSale = addSale({
       employeeId: activeEmployee?.id || 'unknown',
       total: total,
       items: cart,
@@ -78,14 +77,19 @@ export function SalesView() {
       customerId: selectedCustomerId || undefined
     });
     
-    setCheckoutComplete(true);
+    setCompletedSale(newSale);
     setCart([]);
     setSelectedCustomerId('');
     setPaymentMethod('Efectivo');
-    setTimeout(() => {
-      setCheckoutComplete(false);
-      setIsCheckout(false);
-    }, 3000);
+  };
+
+  const closeTicketModal = () => {
+    setCompletedSale(null);
+    setIsCheckout(false);
+  };
+
+  const handlePrintTicket = () => {
+    window.alert("Imprimiendo ticket...");
   };
 
   const handleCalcSubmit = (e: React.FormEvent) => {
@@ -98,11 +102,9 @@ export function SalesView() {
     if (calcMode === 'qty') {
       qty = val;
     } else {
-      // By amount
       qty = val / calcProduct.price;
     }
     
-    // Round to 3 decimals
     qty = Math.round(qty * 1000) / 1000;
     
     if (qty > calcProduct.stock) {
@@ -115,12 +117,77 @@ export function SalesView() {
     setCalcValue('');
   };
 
-  if (checkoutComplete) {
+  if (completedSale) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] p-4 text-center">
-        <CheckCircle2 size={80} className="text-primary mb-6" />
-        <h2 className="text-3xl font-bold text-on-surface mb-2">¡Venta Completada!</h2>
-        <p className="text-on-surface-variant">El inventario ha sido actualizado y la venta registrada.</p>
+      <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-5rem)] p-4 bg-background z-50">
+        <div className="bg-surface rounded-xl p-6 w-full max-w-sm shadow-lg relative flex flex-col max-h-[90vh]">
+          <button onClick={closeTicketModal} className="absolute top-4 right-4 text-outline hover:text-on-surface">
+            <X size={20} />
+          </button>
+          
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold flex items-center gap-2 text-primary"><CheckCircle2 className="text-primary" /> Venta Exitosa</h2>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto border-t border-b border-outline-variant py-4 space-y-4">
+            <div className="text-center mb-4">
+              <h3 className="font-bold text-lg">Pos Venta de Nuez</h3>
+              <p className="text-sm text-on-surface-variant">{new Date(completedSale.date).toLocaleString()}</p>
+              <p className="text-xs text-on-surface-variant mt-1">Folio: {completedSale.id}</p>
+              <p className="text-xs text-on-surface-variant">Atendió: {employees.find(e => e.id === completedSale.employeeId)?.name || 'Cajero'}</p>
+            </div>
+
+            {completedSale.customerId && (
+              <div className="bg-surface-container-low p-2 rounded text-sm text-center border border-outline-variant">
+                <span className="text-on-surface-variant block text-xs">Cliente:</span>
+                <span className="font-bold">{customers.find(c => c.id === completedSale.customerId)?.name || 'Desconocido'}</span>
+              </div>
+            )}
+
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-outline-variant text-on-surface-variant">
+                  <th className="text-left font-normal pb-2">Cant</th>
+                  <th className="text-left font-normal pb-2">Descripción</th>
+                  <th className="text-right font-normal pb-2">Importe</th>
+                </tr>
+              </thead>
+              <tbody>
+                {completedSale.items.map((item, idx) => {
+                  const prod = products.find(p => p.id === item.productId);
+                  return (
+                    <tr key={idx} className="border-b border-outline-variant border-dashed">
+                      <td className="py-2 align-top">{Number.isInteger(item.quantity) ? item.quantity : item.quantity.toFixed(3)}</td>
+                      <td className="py-2">
+                        <div>{prod?.name || 'Producto eliminado'}</div>
+                        <div className="text-xs text-on-surface-variant">${item.priceAtSale.toFixed(2)} c/u</div>
+                      </td>
+                      <td className="py-2 text-right align-top">${item.subtotal.toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="pt-2 text-right">
+              <div className="text-sm text-on-surface-variant mb-1">Método de pago: <span className="font-medium text-on-surface">{completedSale.paymentMethod}</span></div>
+              <div className="text-xl font-bold text-primary">Total: ${completedSale.total.toFixed(2)}</div>
+            </div>
+            
+            <div className="text-center text-xs text-on-surface-variant mt-4">
+              ¡Gracias por su compra!
+            </div>
+          </div>
+
+          <div className="mt-4 flex gap-3 pt-2">
+            <button onClick={closeTicketModal} className="flex-1 py-3 bg-surface-container text-on-surface rounded-lg font-medium hover:bg-surface-container-high transition-colors">
+              Cerrar
+            </button>
+            <button onClick={handlePrintTicket} className="flex-1 py-3 bg-primary text-on-primary rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+              <Printer size={18} /> Imprimir
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

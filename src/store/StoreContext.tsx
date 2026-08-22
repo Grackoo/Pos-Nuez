@@ -19,7 +19,7 @@ interface StoreContextType {
   deleteProduct: (id: string) => void;
   transformStock: (sourceProductId: string, sourceQty: number, targets: TransformationTarget[], employeeId: string) => void;
   
-  addSale: (sale: Omit<Sale, 'id' | 'date'>) => void;
+  addSale: (sale: Omit<Sale, 'id' | 'date'>) => Sale;
   
   addCustomer: (customer: Omit<Customer, 'id'>) => void;
   updateCustomer: (id: string, customer: Partial<Customer>) => void;
@@ -181,7 +181,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   // --- Sales Methods ---
-  const addSale = (saleData: Omit<Sale, 'id' | 'date'>) => {
+  const addSale = (saleData: Omit<Sale, 'id' | 'date'>): Sale => {
     const newSale: Sale = {
       ...saleData,
       id: generateId(),
@@ -236,6 +236,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return session;
       }));
     }
+
+    return newSale;
   };
 
   // --- Customer Methods ---
