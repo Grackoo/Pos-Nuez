@@ -52,15 +52,37 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   });
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('products');
-    return saved ? JSON.parse(saved) : [];
+    if (saved && JSON.parse(saved).length > 0) return JSON.parse(saved);
+    return [
+      { id: 'p1', categoryId: '1', name: 'Nuez Pecana Entera Extra', price: 250, stock: 50, unit: 'Kg' },
+      { id: 'p2', categoryId: '2', name: 'Nuez en Mitades Premium', price: 280, stock: 120, unit: 'Kg' },
+      { id: 'p3', categoryId: '3', name: 'Pedacería de Nuez para Repostería', price: 150, stock: 200, unit: 'Kg' },
+      { id: 'p4', categoryId: '4', name: 'Nuez Garapiñada Artesanal (Bolsa 500g)', price: 180, stock: 8, unit: 'Paquete' },
+      { id: 'p5', categoryId: '5', name: 'Nuez Salada Tostada', price: 210, stock: 45, unit: 'Kg' },
+      { id: 'p6', categoryId: '6', name: 'Harina de Nuez Fina', price: 120, stock: 15, unit: 'Kg' },
+    ];
   });
+  
   const [sales, setSales] = useState<Sale[]>(() => {
     const saved = localStorage.getItem('sales');
-    return saved ? JSON.parse(saved) : [];
+    if (saved && JSON.parse(saved).length > 0) return JSON.parse(saved);
+    const today = new Date().toISOString();
+    return [
+      { id: 's1', date: today, employeeId: '1', total: 750, items: [{ productId: 'p1', quantity: 3, subtotal: 750, priceAtSale: 250 }] },
+      { id: 's2', date: today, employeeId: '1', total: 560, items: [{ productId: 'p2', quantity: 2, subtotal: 560, priceAtSale: 280 }] },
+      { id: 's3', date: today, employeeId: '1', total: 360, items: [{ productId: 'p4', quantity: 2, subtotal: 360, priceAtSale: 180 }] },
+    ];
   });
+  
   const [customers, setCustomers] = useState<Customer[]>(() => {
     const saved = localStorage.getItem('customers');
-    return saved ? JSON.parse(saved) : [];
+    if (saved && JSON.parse(saved).length > 0) return JSON.parse(saved);
+    return [
+      { id: 'c1', name: 'Agro Industrias del Norte', phone: '555-0123', email: 'compras@agronorte.com', balance: 14500 },
+      { id: 'c2', name: 'Distribuidora La Cosecha', phone: '555-0456', email: 'contacto@lacosecha.com', balance: 0 },
+      { id: 'c3', name: 'Exportaciones Nogal', phone: '555-0789', email: 'pagos@nogalexport.com', balance: 850 },
+      { id: 'c4', name: 'Panadería El Trigo de Oro', phone: '555-0999', email: 'trigooro@gmail.com', balance: 2300 },
+    ];
   });
   
   const [activeEmployee, setActiveEmployee] = useState<Employee | null>(null);
