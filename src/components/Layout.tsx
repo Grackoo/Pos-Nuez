@@ -21,32 +21,33 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const baseDesktopNavItems = [
+  const allDesktopNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'sales', label: 'Punto de Venta', icon: Store },
     { id: 'inventory', label: 'Inventario', icon: Package },
     { id: 'cash', label: 'Caja (Corte)', icon: Wallet },
     { id: 'customers', label: 'Clientes', icon: Users },
-    { id: 'employees', label: 'Empleados', icon: Users },
-    { id: 'reports', label: 'Reportes', icon: BarChart2 },
-    { id: 'settings', label: 'Ajustes', icon: Settings },
+    { id: 'employees', label: 'Empleados', icon: Users, adminOnly: true },
+    { id: 'reports', label: 'Reportes', icon: BarChart2, adminOnly: true },
+    { id: 'settings', label: 'Ajustes', icon: Settings, adminOnly: true },
+    { id: 'cash_history', label: 'Historial Caja', icon: Wallet, adminOnly: true },
   ] as const;
 
-  const desktopNavItems = activeEmployee?.role === 'Admin'
-    ? [
-        ...baseDesktopNavItems.slice(0, 4),
-        { id: 'cash_history', label: 'Historial Caja', icon: Wallet },
-        ...baseDesktopNavItems.slice(4)
-      ]
-    : baseDesktopNavItems;
+  const desktopNavItems = activeEmployee?.role === 'Admin' 
+    ? allDesktopNavItems 
+    : allDesktopNavItems.filter(item => !('adminOnly' in item && item.adminOnly));
 
-  const mobileNavItems = [
+  const allMobileNavItems = [
     { id: 'sales', label: 'Ventas', icon: Store },
     { id: 'inventory', label: 'Inventario', icon: Package },
     { id: 'cash', label: 'Caja', icon: Wallet },
     { id: 'customers', label: 'Clientes', icon: Users },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ] as const;
+
+  const mobileNavItems = activeEmployee?.role === 'Admin'
+    ? allMobileNavItems
+    : allMobileNavItems.filter(item => !('adminOnly' in item && (item as any).adminOnly));
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background overflow-x-hidden">

@@ -5,7 +5,7 @@ import { SaleItem, Product, PaymentMethod, Sale } from '../types';
 import { printTicket } from '../utils/printTicket';
 
 export function SalesView() {
-  const { products, categories, customers, employees, activeEmployee, addSale } = useStore();
+  const { products, categories, customers, employees, activeEmployee, addSale, cashSessions } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   
@@ -21,6 +21,8 @@ export function SalesView() {
   const [calcProduct, setCalcProduct] = useState<Product | null>(null);
   const [calcMode, setCalcMode] = useState<'qty' | 'amount'>('qty');
   const [calcValue, setCalcValue] = useState<string>('');
+
+  const hasOpenSession = cashSessions.some(s => s.status === 'Open');
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -122,6 +124,17 @@ export function SalesView() {
     setIsCalcModalOpen(false);
     setCalcValue('');
   };
+
+  if (!hasOpenSession) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-5rem)] p-4 bg-background">
+        <div className="bg-surface rounded-2xl p-8 max-w-md w-full shadow-lg border border-outline-variant text-center">
+          <h2 className="text-2xl font-bold text-error mb-4">Caja Cerrada</h2>
+          <p className="text-on-surface-variant mb-6">Debes abrir turno en la sección de Caja (Corte) antes de poder registrar ventas.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (completedSale) {
     return (

@@ -72,26 +72,30 @@ export function InventoryView() {
           <h1 className="text-2xl font-bold text-primary">Inventario y Almacén</h1>
           <p className="text-sm text-on-surface-variant mt-1">Gestión de productos y transformaciones</p>
         </div>
-        <div className="flex gap-3">
-          <button onClick={() => setIsHistoryOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface rounded-lg hover:bg-surface-container-high transition-colors font-medium text-sm">
-            <FileClock size={18} /> Historial
-          </button>
-          <button onClick={() => setIsTransformOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg hover:bg-secondary/90 transition-colors font-medium text-sm shadow-sm">
-            <Factory size={18} /> Transformar Lote
-          </button>
-          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm shadow-sm">
-            <Plus size={18} /> Nuevo Producto
-          </button>
-        </div>
+        {activeEmployee?.role === 'Admin' && (
+          <div className="flex gap-3">
+            <button onClick={() => setIsHistoryOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface rounded-lg hover:bg-surface-container-high transition-colors font-medium text-sm">
+              <FileClock size={18} /> Historial
+            </button>
+            <button onClick={() => setIsTransformOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg hover:bg-secondary/90 transition-colors font-medium text-sm shadow-sm">
+              <Factory size={18} /> Transformar Lote
+            </button>
+            <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm shadow-sm">
+              <Plus size={18} /> Nuevo Producto
+            </button>
+          </div>
+        )}
       </header>
 
-      {/* Mobile header area omitted for brevity, but similar buttons could be added */}
+      {/* Mobile header area */}
       <div className="md:hidden flex flex-col gap-2 p-4">
          <h1 className="text-xl font-bold text-primary">Inventario</h1>
-         <div className="flex gap-2">
-            <button onClick={() => setIsTransformOpen(true)} className="flex-1 flex items-center justify-center gap-2 px-2 py-2 bg-secondary text-on-secondary rounded-lg text-sm"><Factory size={16}/> Transformar</button>
-            <button onClick={() => handleOpenModal()} className="flex-1 flex items-center justify-center gap-2 px-2 py-2 bg-primary text-on-primary rounded-lg text-sm"><Plus size={16}/> Nuevo</button>
-         </div>
+         {activeEmployee?.role === 'Admin' && (
+           <div className="flex gap-2">
+              <button onClick={() => setIsTransformOpen(true)} className="flex-1 flex items-center justify-center gap-2 px-2 py-2 bg-secondary text-on-secondary rounded-lg text-sm"><Factory size={16}/> Transformar</button>
+              <button onClick={() => handleOpenModal()} className="flex-1 flex items-center justify-center gap-2 px-2 py-2 bg-primary text-on-primary rounded-lg text-sm"><Plus size={16}/> Nuevo</button>
+           </div>
+         )}
       </div>
 
       <div className="p-4 md:p-6 flex-1 max-w-7xl mx-auto w-full flex flex-col gap-6">
@@ -149,7 +153,7 @@ export function InventoryView() {
                   <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider text-right">Precio</th>
                   <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider text-center">Stock</th>
                   <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider text-center">Unidad</th>
-                  <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider text-right">Acciones</th>
+                  {activeEmployee?.role === 'Admin' && <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider text-right">Acciones</th>}
                 </tr>
               </thead>
               <tbody className="text-sm">
@@ -175,10 +179,12 @@ export function InventoryView() {
                         </span>
                       </td>
                       <td className="p-4 text-center text-on-surface-variant">{product.unit}</td>
-                      <td className="p-4 text-right">
-                        <button onClick={() => handleOpenModal(product)} className="p-2 text-primary hover:bg-primary/10 rounded transition-colors mx-1"><Edit2 size={18} /></button>
-                        <button onClick={() => deleteProduct(product.id)} className="p-2 text-error hover:bg-error/10 rounded transition-colors"><Trash2 size={18} /></button>
-                      </td>
+                      {activeEmployee?.role === 'Admin' && (
+                        <td className="p-4 text-right">
+                          <button onClick={() => handleOpenModal(product)} className="p-2 text-primary hover:bg-primary/10 rounded transition-colors mx-1"><Edit2 size={18} /></button>
+                          <button onClick={() => deleteProduct(product.id)} className="p-2 text-error hover:bg-error/10 rounded transition-colors"><Trash2 size={18} /></button>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
