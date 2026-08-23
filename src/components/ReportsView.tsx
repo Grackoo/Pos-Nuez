@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Banknote, FileText, Table, Send, Receipt, X, Printer } from 'lucide-react';
 import { useStore } from '../store/StoreContext';
 import { Sale } from '../types';
+import { printTicket } from '../utils/printTicket';
 
 export function ReportsView() {
   const { sales, employees, products, customers } = useStore();
@@ -18,7 +19,9 @@ export function ReportsView() {
   }).sort((a, b) => b.totalSalesAmount - a.totalSalesAmount);
 
   const handlePrintTicket = () => {
-    window.alert("Generando ticket para impresión...");
+    if (selectedTicket) {
+      printTicket(selectedTicket, employees, customers, products);
+    }
   };
 
   return (

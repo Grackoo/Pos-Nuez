@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, ArrowRight, Minus, Plus, ShoppingCart, Trash2, CheckCircle2, Calculator, Receipt, X, Printer } from 'lucide-react';
 import { useStore } from '../store/StoreContext';
 import { SaleItem, Product, PaymentMethod, Sale } from '../types';
+import { printTicket } from '../utils/printTicket';
 
 export function SalesView() {
   const { products, categories, customers, employees, activeEmployee, addSale } = useStore();
@@ -89,7 +90,9 @@ export function SalesView() {
   };
 
   const handlePrintTicket = () => {
-    window.alert("Imprimiendo ticket...");
+    if (completedSale) {
+      printTicket(completedSale, employees, customers, products);
+    }
   };
 
   const handleCalcSubmit = (e: React.FormEvent) => {
