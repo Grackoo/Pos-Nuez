@@ -143,6 +143,7 @@ export function InventoryView() {
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-surface-container border-b border-outline-variant">
+                  <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Fecha</th>
                   <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Producto</th>
                   <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Categoría</th>
                   <th className="p-4 text-xs font-medium text-on-surface-variant uppercase tracking-wider text-right">Precio</th>
@@ -157,6 +158,9 @@ export function InventoryView() {
                   const isLowStock = product.stock < 10;
                   return (
                     <tr key={product.id} className="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+                      <td className="p-4 text-on-surface-variant text-xs">
+                        {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : '-'}
+                      </td>
                       <td className="p-4 font-medium text-on-surface flex items-center gap-2">
                         {isLowStock && <Activity size={16} className="text-error" />}
                         {product.name}
@@ -307,26 +311,53 @@ export function InventoryView() {
         </div>
       )}
 
-      {/* Modal CRUD Producto (Existing) */}
+      {/* Modal CRUD Producto */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-surface rounded-xl p-6 w-full max-w-md shadow-lg relative">
             <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-outline hover:text-on-surface"><X size={20} /></button>
             <h2 className="text-xl font-bold mb-4">{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Form fields... (simplified for brevity, identical to previous logic) */}
-              <div><label className="block text-sm font-medium mb-1">Nombre</label><input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-2 border border-outline rounded-lg outline-none" /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium mb-1">Categoría</label><select required value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} className="w-full p-2 border border-outline rounded-lg outline-none">{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-                <div><label className="block text-sm font-medium mb-1">Unidad</label><select value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value as any})} className="w-full p-2 border border-outline rounded-lg outline-none"><option>Kg</option><option>Gramos</option><option>Pieza</option><option>Paquete</option></select></div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Nombre</label>
+                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-2 border border-outline rounded-lg bg-surface outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium mb-1">Precio ($)</label><input required type="number" min="0" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: parseFloat(e.target.value) || 0})} className="w-full p-2 border border-outline rounded-lg outline-none" /></div>
-                <div><label className="block text-sm font-medium mb-1">Stock Inicial</label><input required type="number" min="0" step="0.001" value={formData.stock} onChange={e => setFormData({...formData, stock: parseFloat(e.target.value) || 0})} className="w-full p-2 border border-outline rounded-lg outline-none" /></div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Categoría</label>
+                  <select required value={formData.categoryId} onChange={e => setFormData({...formData, categoryId: e.target.value})} className="w-full p-2 border border-outline rounded-lg bg-surface outline-none focus:ring-2 focus:ring-primary">
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Unidad</label>
+                  <select value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value as any})} className="w-full p-2 border border-outline rounded-lg bg-surface outline-none focus:ring-2 focus:ring-primary">
+                    <option>Kg</option><option>Gramos</option><option>Pieza</option><option>Paquete</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Precio ($)</label>
+                  <input required type="number" min="0" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: parseFloat(e.target.value) || 0})} className="w-full p-2 border border-outline rounded-lg bg-surface outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Stock Inicial</label>
+                  <input required type="number" min="0" step="0.001" value={formData.stock} onChange={e => setFormData({...formData, stock: parseFloat(e.target.value) || 0})} className="w-full p-2 border border-outline rounded-lg bg-surface outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-on-surface-variant">Fecha de Registro (Opcional)</label>
+                <input 
+                  type="datetime-local" 
+                  value={formData.createdAt ? formData.createdAt.slice(0, 16) : ''} 
+                  onChange={e => setFormData({...formData, createdAt: e.target.value ? new Date(e.target.value).toISOString() : undefined})} 
+                  className="w-full p-2 border border-outline rounded-lg bg-surface outline-none focus:ring-2 focus:ring-primary text-sm" 
+                />
               </div>
               <div className="pt-4 flex justify-end gap-2">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-primary hover:bg-primary/10 rounded-lg">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90">Guardar</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-primary hover:bg-primary/10 rounded-lg font-medium">Cancelar</button>
+                <button type="submit" className="px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 font-bold">Guardar</button>
               </div>
             </form>
           </div>

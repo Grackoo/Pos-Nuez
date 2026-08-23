@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Banknote, FileText, Table, Send, Receipt, X, Printer } from 'lucide-react';
+import { Banknote, FileText, Table, Send, Receipt, X, Printer, Trash2 } from 'lucide-react';
 import { useStore } from '../store/StoreContext';
 import { Sale } from '../types';
 import { printTicket } from '../utils/printTicket';
 
 export function ReportsView() {
-  const { sales, employees, products, customers } = useStore();
+  const { sales, employees, products, customers, deleteSale } = useStore();
 
   const [selectedTicket, setSelectedTicket] = useState<Sale | null>(null);
 
@@ -82,9 +82,14 @@ export function ReportsView() {
                         ${sale.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="p-4 text-center">
-                        <button onClick={() => setSelectedTicket(sale)} className="p-2 text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors inline-flex items-center gap-1">
-                          <Receipt size={16} /> <span className="text-xs font-medium">Ticket</span>
-                        </button>
+                        <div className="flex justify-center gap-2">
+                          <button onClick={() => setSelectedTicket(sale)} className="p-2 text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors inline-flex items-center gap-1">
+                            <Receipt size={16} /> <span className="text-xs font-medium">Ticket</span>
+                          </button>
+                          <button onClick={() => { if(window.confirm('¿Eliminar esta venta? Se regresará el stock al inventario.')) deleteSale(sale.id); }} className="p-2 text-error bg-error/10 hover:bg-error/20 rounded-lg transition-colors inline-flex items-center gap-1">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

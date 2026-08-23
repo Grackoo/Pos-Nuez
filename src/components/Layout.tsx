@@ -1,6 +1,7 @@
 import React from 'react';
+import { useStore } from '../store/StoreContext';
 import { ViewType } from '../types';
-import { LayoutDashboard, Package, BarChart2, Users, Settings, Store, Map, Bell, Wallet } from 'lucide-react';
+import { LayoutDashboard, Package, BarChart2, Users, Settings, Store, Bell, Wallet, LogOut } from 'lucide-react';
 
 interface LayoutProps {
   currentView: ViewType;
@@ -10,6 +11,7 @@ interface LayoutProps {
 
 export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
   const [storeName, setStoreName] = React.useState(() => localStorage.getItem('setting_store_name') || 'Pos Venta de Nuez');
+  const { activeEmployee, setActiveEmployee } = useStore();
 
   React.useEffect(() => {
     const handleStorageChange = () => {
@@ -19,7 +21,7 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const desktopNavItems = [
+  const baseDesktopNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'sales', label: 'Punto de Venta', icon: Store },
     { id: 'inventory', label: 'Inventario', icon: Package },
@@ -29,6 +31,14 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
     { id: 'reports', label: 'Reportes', icon: BarChart2 },
     { id: 'settings', label: 'Ajustes', icon: Settings },
   ] as const;
+
+  const desktopNavItems = activeEmployee?.role === 'Admin'
+    ? [
+        ...baseDesktopNavItems.slice(0, 4),
+        { id: 'cash_history', label: 'Historial Caja', icon: Wallet },
+        ...baseDesktopNavItems.slice(4)
+      ]
+    : baseDesktopNavItems;
 
   const mobileNavItems = [
     { id: 'sales', label: 'Ventas', icon: Store },
@@ -46,16 +56,23 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
           <h2 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">{storeName}</h2>
         </div>
 
-        <div className="px-4 mb-6 flex items-center gap-3">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7ZMrNpfnqeF13Ct5Slc8r5Q0dfOE7GdLNKkWnALqI8i4R2ffeiesZCa4s8gNSg2eIiDbYuKJM49IXyLTDdi0nS6yuXOX6NZnd5YMkXOtkxcefBoVMxGmyJk3GI_gFWFHiWUpWCumK3d0ScKQH03zG4K3eTllrRfmwsvNS4fA9TlK7S6La_FoZUQlwCyLGZK6Hs5tijrQ8vycO-_yjCH17D7kMZtABYI5IcHQjPZcqgMlU_3kEYck"
-            alt="Manager"
-            className="w-10 h-10 rounded-full object-cover border border-outline-variant"
-          />
-          <div>
-            <p className="font-label-sm text-on-surface">Nogal Admin</p>
-            <p className="font-label-sm text-on-surface-variant font-normal">Warehouse Manager</p>
+        <div className="px-4 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary border border-outline-variant">
+              {activeEmployee?.name.charAt(0)}
+            </div>
+            <div>
+              <p className="font-label-sm text-on-surface font-bold">{activeEmployee?.name}</p>
+              <p className="font-label-sm text-on-surface-variant font-normal">{activeEmployee?.role}</p>
+            </div>
           </div>
+          <button 
+            onClick={() => setActiveEmployee(null)}
+            className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-colors"
+            title="Cerrar sesión"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
 
         <ul className="flex flex-col gap-2 flex-grow">
@@ -86,15 +103,16 @@ export function Layout({ currentView, setCurrentView, children }: LayoutProps) {
       {/* TopAppBar (Mobile) */}
       <header className="md:hidden flex justify-between items-center px-margin-mobile h-touch-target-min w-full fixed top-0 z-50 bg-surface border-b border-outline-variant">
         <div className="flex items-center gap-3">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCt9Bcf27Iv85sLYrtjDoW_CPFQIzTk902a5_2ZGZDKnTIUpllOYL6pHC5to9rC385Fs_Ml-7Tdbo5w-gnBQrfjO9ImOTEQMEuLcpXHQJcF6wFEbILbeOXFMypMG0o3X2sBvxSq-YK9SSF1Yfwh3WEE18tsNd7NIWlG6ct9hiLms2SVG9fiv1UHjv8cJUdFKfBL26kGmfpaLtJqHARDmUbY2yrVxMfTgDtMm6F_kkDJGYXe8dTEwh0"
-            alt="Manager"
-            className="w-8 h-8 rounded-full object-cover border border-outline-variant"
-          />
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary border border-outline-variant text-sm">
+            {activeEmployee?.name.charAt(0)}
+          </div>
           <span className="font-headline-lg-mobile font-bold text-primary tracking-tight">{storeName}</span>
         </div>
-        <button className="text-on-surface-variant hover:bg-surface-container transition-colors rounded-full h-10 w-10 flex items-center justify-center">
-          <Bell size={24} />
+        <button 
+          onClick={() => setActiveEmployee(null)}
+          className="text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors rounded-full h-10 w-10 flex items-center justify-center"
+        >
+          <LogOut size={20} />
         </button>
       </header>
 

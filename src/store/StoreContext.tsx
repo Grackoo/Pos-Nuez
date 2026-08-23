@@ -19,7 +19,8 @@ interface StoreContextType {
   deleteProduct: (id: string) => void;
   transformStock: (sourceProductId: string, sourceQty: number, targets: TransformationTarget[], employeeId: string) => void;
   
-  addSale: (sale: Omit<Sale, 'id' | 'date'>) => Sale;
+  addSale: (sale: Omit<Sale, 'id'> & { date?: string }) => Sale;
+  deleteSale: (id: string) => void;
   
   addCustomer: (customer: Omit<Customer, 'id'>) => void;
   updateCustomer: (id: string, customer: Partial<Customer>) => void;
@@ -34,6 +35,7 @@ interface StoreContextType {
   openCashSession: (employeeId: string, initialAmount: number) => void;
   closeCashSession: (actualCash: number) => void;
   addCashMovement: (type: 'in' | 'out', amount: number, description: string) => void;
+  deleteCashSession: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -117,7 +119,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return saved ? JSON.parse(saved) : [];
   });
   
-  const [activeEmployee, setActiveEmployee] = useState<Employee | null>(null);
+  const [activeEmployee, setActiveEmployee] = useState<Employee | null>(() => {
+    return null;
+  });
 
   // Persistence
   useEffect(() => { localStorage.setItem('employees', JSON.stringify(employees)); }, [employees]);
@@ -133,7 +137,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // --- Product & Transformation Methods ---
   const addProduct = (product: Omit<Product, 'id'>) => {
-    setProducts(prev => [...prev, { ...product, id: generateId() }]);
+    setProducts(prev => [...prev, { ...product, id: generateId(), createdAt: product.createdAt || new Date().toISOString() }]);
   };
 
   const updateProduct = (id: string, productUpdate: Partial<Product>) => {
@@ -181,11 +185,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   // --- Sales Methods ---
-  const addSale = (saleData: Omit<Sale, 'id' | 'date'>): Sale => {
+  const addSale = (saleData: Omit<Sale, 'id'> & { date?: string }): Sale => {
     const newSale: Sale = {
       ...saleData,
       id: generateId(),
-      date: new Date().toISOString(),
+      date: saleData.date || new Date().toISOString(),
     };
     
     // 1. Decrease inventory
@@ -238,6 +242,27 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
 
     return newSale;
+  };
+
+  const deleteSale = (id: string) => {
+    const saleToDelete = sales.find(s => s.id === id);
+    if (!saleToDelete) return;
+
+    // Optional: Return items to inventory
+    let newProducts = [...products];
+    saleToDelete.items.forEach(item => {
+      const productIndex = newProducts.findIndex(p => p.id === item.productId);
+      if (productIndex !== -1) {
+        newProducts[productIndex] = {
+          ...newProducts[productIndex],
+          stock: newProducts[productIndex].stock + item.quantity
+        };
+      }
+    });
+    setProducts(newProducts);
+
+    // Delete sale
+    setSales(prev => prev.filter(s => s.id !== id));
   };
 
   // --- Customer Methods ---
@@ -299,7 +324,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       cashIn: 0,
       cashOut: 0,
       expectedCash: initialAmount,
-      status: 'Open'
+      status: 'Open',
+      movements: []
     };
     setCashSessions(prev => [...prev, newSession]);
   };
@@ -324,20 +350,34 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const cashIn = type === 'in' ? session.cashIn + amount : session.cashIn;
         const cashOut = type === 'out' ? session.cashOut + amount : session.cashOut;
         const expectedCash = session.initialAmount + session.cashSales + cashIn - cashOut;
-        return { ...session, cashIn, cashOut, expectedCash };
+        
+        const newMovement = {
+          id: generateId(),
+          type,
+          amount,
+          description,
+          date: new Date().toISOString()
+        };
+        const movements = session.movements ? [...session.movements, newMovement] : [newMovement];
+
+        return { ...session, cashIn, cashOut, expectedCash, movements };
       }
       return session;
     }));
+  };
+
+  const deleteCashSession = (id: string) => {
+    setCashSessions(prev => prev.filter(s => s.id !== id));
   };
 
   return (
     <StoreContext.Provider value={{
       employees, categories, products, sales, customers, customerMovements, cashSessions, transformations, activeEmployee, setActiveEmployee,
       addProduct, updateProduct, deleteProduct, transformStock,
-      addSale,
+      addSale, deleteSale,
       addCustomer, updateCustomer, deleteCustomer, addCustomerPayment,
       addEmployee, updateEmployee, deleteEmployee,
-      openCashSession, closeCashSession, addCashMovement
+      openCashSession, closeCashSession, addCashMovement, deleteCashSession
     }}>
       {children}
     </StoreContext.Provider>

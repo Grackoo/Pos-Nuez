@@ -44,8 +44,8 @@ export function CashRegisterView() {
 
   if (!currentSession) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-5rem)] p-4">
-        <div className="bg-surface rounded-2xl p-8 max-w-md w-full shadow-lg border border-outline-variant text-center">
+      <div className="flex flex-col items-center justify-start h-full p-4 gap-6 max-w-4xl mx-auto overflow-y-auto">
+        <div className="bg-surface rounded-2xl p-8 max-w-md w-full shadow-lg border border-outline-variant text-center mt-10">
           <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock className="text-primary" size={40} />
           </div>

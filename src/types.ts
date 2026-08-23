@@ -1,4 +1,4 @@
-export type ViewType = 'dashboard' | 'inventory' | 'sales' | 'customers' | 'reports' | 'employees' | 'settings' | 'cash';
+export type ViewType = 'dashboard' | 'inventory' | 'sales' | 'customers' | 'reports' | 'employees' | 'settings' | 'cash' | 'cash_history';
 
 export interface Employee {
   id: string;
@@ -19,6 +19,7 @@ export interface Product {
   price: number;
   stock: number;
   unit: 'Kg' | 'Gramos' | 'Pieza' | 'Paquete';
+  createdAt?: string;
 }
 
 export interface SaleItem {
@@ -57,6 +58,14 @@ export interface CustomerMovement {
   description: string;
 }
 
+export interface CashMovement {
+  id: string;
+  type: 'in' | 'out';
+  amount: number;
+  description: string;
+  date: string;
+}
+
 export interface CashSession {
   id: string;
   startTime: string;
@@ -70,6 +79,7 @@ export interface CashSession {
   expectedCash: number;
   actualCash?: number;
   status: 'Open' | 'Closed';
+  movements?: CashMovement[];
 }
 
 export interface TransformationTarget {

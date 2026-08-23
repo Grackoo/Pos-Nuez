@@ -12,6 +12,7 @@ export function SalesView() {
   const [cart, setCart] = useState<SaleItem[]>([]);
   const [isCheckout, setIsCheckout] = useState(false);
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
+  const [customDate, setCustomDate] = useState<string | undefined>(undefined);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Efectivo');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
@@ -75,13 +76,15 @@ export function SalesView() {
       total: total,
       items: cart,
       paymentMethod,
-      customerId: selectedCustomerId || undefined
+      customerId: selectedCustomerId || undefined,
+      date: customDate
     });
     
     setCompletedSale(newSale);
     setCart([]);
     setSelectedCustomerId('');
     setPaymentMethod('Efectivo');
+    setCustomDate(undefined);
   };
 
   const closeTicketModal = () => {
@@ -349,6 +352,16 @@ export function SalesView() {
               <option value="">Consumidor Final</option>
               {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-on-surface-variant font-medium">Fecha de Venta (Opcional, por defecto Ahora)</label>
+            <input 
+              type="datetime-local" 
+              value={customDate ? customDate.slice(0, 16) : ''}
+              onChange={e => setCustomDate(e.target.value ? new Date(e.target.value).toISOString() : undefined)}
+              className="w-full p-2 rounded-lg border border-outline bg-surface focus:ring-2 focus:ring-primary outline-none text-sm"
+            />
           </div>
 
           <div className="flex justify-between items-center mt-2 text-lg">
