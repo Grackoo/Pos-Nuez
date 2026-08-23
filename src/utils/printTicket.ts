@@ -61,7 +61,7 @@ export const printTicket = (sale: Sale, employees: Employee[], customers: Custom
           <p>${new Date(sale.date).toLocaleString()}</p>
           <p>Folio: ${sale.id}</p>
           <p>Atendió: ${employee}</p>
-          ${customer ? \`<p>Cliente: \${customer}</p>\` : ''}
+          ${customer ? `<p>Cliente: ${customer}</p>` : ''}
         </div>
         
         <div class="divider"></div>
